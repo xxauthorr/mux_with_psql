@@ -1,0 +1,57 @@
+{{ template "header_sec.html" .}}
+
+<div class="login-wrapper">
+    <div class="wrapper">
+        <div class="title-text">
+            <div class="title login">Login Form</div>
+            <div class="title signup">Signup Form</div>
+        </div>
+        <div class="form-container">
+            <div class="slide-controls">
+                <input type="radio" name="slide" id="login" checked>
+                <input type="radio" name="slide" id="signup">
+                <label for="login" class="slide login">Login</label>
+                <label for="signup" class="slide signup">Signup</label>
+                <div class="slider-tab"></div>
+            </div>
+            {{ if .Errmsg }}
+            <p>{{ .Errmsg }}</p>
+            {{end}}
+            <div class="form-inner">            
+                <form action="/user/userValidate" method="post" class="login">
+                    <div class="field">
+                        <input type="email" name="userEmail" placeholder="Email" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" name="userPass" placeholder="Password" required>
+                    </div>
+                    <div class="pass-link"><a href="#" style="color: blue;">Forgot password?</a></div>
+                    <div class="field btn">
+                        <div class="btn-layer" style="background-color: black;"></div>
+                        <input type="submit" value="Login" style="color: white">
+                    </div>
+                    <div class="signup-link" style="color: black;">Not a member? <a href="" style="color: blue;">Signup now</a></div>
+                </form>
+                <form action="/user/userRegister" method="post" class="signup">
+                    <div class="field">
+                        <input type="text" name="userEmail" id="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" name="userPass" id="pass" placeholder="Password" required>
+                    </div>
+                    <div class="field">
+                        <input type="password" name="userPassConfirm" id="confpass" onkeyup="checkPass()" placeholder="Confirm password" required>
+                        <p id="error-pass" style="color: red;"></p>
+                    </div>
+                    <div class="field btn">
+                        <div class="btn-layer"></div>
+                        <input type="submit"  value="Signup">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{ template "footer_sec.html"}}
