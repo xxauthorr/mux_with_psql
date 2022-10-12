@@ -15,7 +15,7 @@
                 <div class="slider-tab"></div>
             </div>
             {{ if .Errmsg }}
-            <p>{{ .Errmsg }}</p>
+            <p style="color: red;text-align:center">{{ .Errmsg }}</p>
             {{end}}
             <div class="form-inner">            
                 <form action="/user/userValidate" method="post" class="login">

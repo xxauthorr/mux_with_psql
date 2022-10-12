@@ -36,8 +36,10 @@ func main() {
 	userRoutes := router.PathPrefix("/user").Subrouter()
 
 	userRoutes.HandleFunc("/authenticate", handlers.SignUpPage)
+	userRoutes.HandleFunc("/home", handlers.Auth(handlers.UserHome))
 	userRoutes.HandleFunc("/userRegister", handlers.UserRegister)
 	userRoutes.HandleFunc("/userValidate", handlers.ValidateUser)
+	userRoutes.HandleFunc("/logout", handlers.LogoutUser)
 
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

@@ -38,6 +38,11 @@ func CheckEmail(formEmail string) (string, bool) {
 			return "", false
 		}
 	}
+	if tbl.Email == "" {
+		fmt.Println("Email,(", formEmail, ") is not in clientUser Database")
+		return "", false
+	}
+
 	fmt.Println("Hash-pass of ", tbl.Email, ":", tbl.Hashpass)
 	return tbl.Hashpass, true
 }
