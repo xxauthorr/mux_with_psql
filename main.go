@@ -67,8 +67,9 @@ func main() {
 	adminRoutes.HandleFunc("/login", handlers.AdminLogin)
 	adminRoutes.HandleFunc("/authenticate", handlers.ValidateAdmin)
 	adminRoutes.HandleFunc("/dashboard", handlers.AdminAuth(handlers.Dashboard))
-	adminRoutes.HandleFunc("/deleteUser", handlers.DeleteUser)
-	adminRoutes.HandleFunc("/editUser", handlers.EditUser)
+	adminRoutes.HandleFunc("/deleteUser/{Id}", handlers.AdminAuth(handlers.DeleteUser))
+	adminRoutes.HandleFunc("/editUser/{Id}", handlers.AdminAuth(handlers.EditUser))
+	adminRoutes.HandleFunc("/update/{Id}", handlers.AdminAuth(handlers.UpdateUser))
 	adminRoutes.HandleFunc("/logout", handlers.AdminLogout)
 
 	log.Fatal(http.ListenAndServe(":3000", router))

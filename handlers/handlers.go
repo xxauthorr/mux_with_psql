@@ -9,6 +9,8 @@ import (
 
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 var Tpl *template.Template
@@ -207,28 +209,38 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	session, _ := utils.AdminStore.Get(r, "session")
 	if session.Values["AdminAuthenticate"] == true {
 		w.Header().Set("Cache-Control", "no-store")
-		// username := session.Values["AdminUserName"].(string)
+		username := session.Values["AdminUserName"].(string)
 		UserData := database.FetchUserData()
-		// Data := models.ClientUser{Title: "Dasboard", Username: username}
-		// UserData = append(UserData, Data)
-		// for i := range UserData {
-		// 	models.ClientUser{Id: UserData[i].Id}
-		// }
-		UserData.Title = "Dash"
+		UserData.Title = "DashBoard"
+		UserData.AdminName = username
 		Tpl.ExecuteTemplate(w, "adminDashboard.html", UserData)
 	}
 
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	id := r.PostFormValue("userId")
-	database.DeleteUser(id)
+	vars := mux.Vars(r)
+	userId := vars["Id"]
+	res := database.DeleteUser(userId)
+	if res {
+		fmt.Print("worked")
+		http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
+	} else {
+		fmt.Fprint(w, "not deleted!!")
+	}
 }
 
 func EditUser(w http.ResponseWriter, r *http.Request) {
-
-	val := models.ClientUser{Title: "Edit User"}
+	vars := mux.Vars(r)
+	userId := vars["Id"]
+	fmt.Println("user id :", userId)
+	email, err := database.GetUser(userId)
+	if !err {
+		log.Fatal(err)
+	}
+	session, _ := utils.AdminStore.Get(r, "session")
+	userName := session.Values["AdminUserName"].(string)
+	val := models.ClientUser{Title: "Edit User", Email: email, Id: userId, Username: userName}
 	Tpl.ExecuteTemplate(w, "editPanel.html", val)
 
 }
@@ -245,5 +257,18 @@ func AdminLogout(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 	val := models.ClientUser{Title: "Admin Login"}
 	Tpl.ExecuteTemplate(w, "adminLogin.html", val)
+
+}
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId := vars["Id"]
+	r.ParseForm()
+	newEmail := r.PostFormValue("updatedEmail")
+	err := database.UpdateUserdata(userId, newEmail)
+	if !err {
+		log.Fatal("User update :", err)
+	}
+	http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
 
 }

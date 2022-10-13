@@ -2,7 +2,7 @@ package models
 
 type Credentials struct {
 	Errmsg   string
-	Header   string
+	Header   string 
 	Email    string
 	LoggedIn bool
 }
@@ -16,12 +16,9 @@ type ClientUser struct {
 	Title    string
 }
 
-type UserData []struct {
-	id    string
-	email string
-}
 
 type Sample struct {
 	Data []ClientUser
 	Title string
+	AdminName string
 }

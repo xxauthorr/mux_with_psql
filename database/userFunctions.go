@@ -85,6 +85,24 @@ func DeleteUser(id string) bool {
 	return true
 }
 
+func GetUser(userId string) (string, bool) {
+	var userEmail string
+	getStmt := `SELECT email FROM clientuser WHERE "id" = $1;`
+	rows, err := Db.Query(getStmt, userId)
+	if err != nil {
+		log.Fatal("GetUser err :", err)
+		return "", false
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err1 := rows.Scan(&userEmail); err1 != nil {
+			log.Fatal("hashpass retrieve error", err1.Error())
+			return "", false
+		}
+	}
+	return userEmail, true
+}
+
 func EditUser(id, newEmail string) bool {
 	_, err := Db.Exec(`UPDATE clientuser SET email = $1`, newEmail)
 	if err != nil {
@@ -99,23 +117,32 @@ func FetchUserData() models.Sample {
 	var (
 		tableId, tableEmail string
 	)
-
+	var ClientData models.Sample
+	var Data = models.ClientUser{}
 	rows, err := Db.Query(`SELECT id,email FROM clientuser`)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	defer rows.Close()
-	// var Data = models.ClientUser{}
-	var data models.Sample
 	for rows.Next() {
 		if err := rows.Scan(&tableId, &tableEmail); err != nil {
 			log.Fatal(err.Error())
 		}
-		Data := models.ClientUser{
+		Data = models.ClientUser{
 			Id:    tableId,
 			Email: tableEmail,
 		}
-		data.Data = append(data.Data, Data)
+		ClientData.Data = append(ClientData.Data, Data)
 	}
-	return data
+	return ClientData
+}
+
+func UpdateUserdata(userId, newEmail string) bool {
+	insertStmt := `UPDATE clientuser SET email = $1 WHERE id = $2`
+	_, updateErr := Db.Exec(insertStmt, newEmail, userId)
+	if updateErr != nil {
+		log.Fatal(updateErr.Error())
+		return false
+	}
+	return true
 }
