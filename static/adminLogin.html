@@ -1,0 +1,25 @@
+{{ template "adminHeader.html" .}}
+    <div class="wrapper">
+        <div class="text-center mt-4 name" >
+            Admin
+        </div>
+        {{if .ErrMsg}}
+        <div>
+            <h5 style="color:red; text-align: center;">{{ .ErrMsg}}</h5>
+        </div>
+        {{end}}
+        <form action="/admin/authenticate" method="post" class="p-3 mt-3">
+            <div class="form-field d-flex align-items-center">
+                <span class="far fa-user"></span>
+                <input type="text" name="adminName" id="userName" placeholder="Username">
+            </div>
+            <div class="form-field d-flex align-items-center">
+                <span class="fas fa-key"></span>
+                <input type="password" name="adminPassword" id="pwd" placeholder="Password">
+            </div>
+            <button class="btn" >Login</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.20.0/js/mdb.min.js" integrity="sha512-XFd1m0eHgU1F05yOmuzEklFHtiacLVbtdBufAyZwFR0zfcq7vc6iJuxerGPyVFOXlPGgM8Uhem9gwzMI8SJ5uw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>

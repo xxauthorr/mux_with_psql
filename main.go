@@ -24,9 +24,30 @@ func init() {
 	}
 }
 
+// func FetchUserData() {
+// 	ClientData := make([]*models.ClientUser, 0)
+// 	rows, err := database.Db.Query(`SELECT id,email FROM clientuser`)
+// 	if err != nil {
+// 		log.Fatal(err.Error())
+// 	}
+// 	defer rows.Close()
+
+// 	for rows.Next() {
+// 		user := new(models.ClientUser)
+// 		if err := rows.Scan(&user.Id, &user.Email); err != nil {
+// 			log.Fatal(err.Error())
+// 		}
+// 		ClientData = append(ClientData, user)
+// 	}
+// 	// fmt.Println(ClientData, "hai")
+// 	for i := range ClientData {
+// 		fmt.Println(*ClientData[i])
+// 	}
+
+// }
+
 func main() {
 	database.ConnectDb()
-
 	router := mux.NewRouter().StrictSlash(true)
 
 	FileServer := http.FileServer(http.Dir("./static/assets/"))
@@ -35,11 +56,20 @@ func main() {
 	router.HandleFunc("/", handlers.IndexPage)
 	userRoutes := router.PathPrefix("/user").Subrouter()
 
-	userRoutes.HandleFunc("/authenticate", handlers.SignUpPage)
 	userRoutes.HandleFunc("/home", handlers.Auth(handlers.UserHome))
-	userRoutes.HandleFunc("/userRegister", handlers.UserRegister)
 	userRoutes.HandleFunc("/userValidate", handlers.ValidateUser)
+	userRoutes.HandleFunc("/authenticate", handlers.SignUpPage)
+	userRoutes.HandleFunc("/userRegister", handlers.UserRegister)
 	userRoutes.HandleFunc("/logout", handlers.LogoutUser)
+
+	adminRoutes := router.PathPrefix("/admin").Subrouter()
+
+	adminRoutes.HandleFunc("/login", handlers.AdminLogin)
+	adminRoutes.HandleFunc("/authenticate", handlers.ValidateAdmin)
+	adminRoutes.HandleFunc("/dashboard", handlers.AdminAuth(handlers.Dashboard))
+	adminRoutes.HandleFunc("/deleteUser", handlers.DeleteUser)
+	adminRoutes.HandleFunc("/editUser", handlers.EditUser)
+	adminRoutes.HandleFunc("/logout", handlers.AdminLogout)
 
 	log.Fatal(http.ListenAndServe(":3000", router))
 }

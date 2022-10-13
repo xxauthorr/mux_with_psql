@@ -1,0 +1,40 @@
+{{ template "adminHeader.html" .}}
+
+
+
+<div class="content">
+  
+  <div class="container">.
+    <div class="" style="display: flex; justify-content: space-between;">
+      <h2 class="mb-5 font-weight-bold" style="text-transform:capitalize;">Username<span> - Admin Control</span></h2>
+      <a href="/admin/logout" style="height: 35px;" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-striped custom-table">
+        <thead>
+          <tr>
+
+            <th scope="col">Id</th>
+            <th scope="col">Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Data}}
+             <tr scope="row">
+            <td>{{.Id}}</td>
+            <td><a href="#">{{.Email }}</a></td>
+            <td><a class="btn btn-primary" style="color:black important! ;" href="/admin/editUser">Edit</a></td>
+            <td><a class="btn btn-danger" style="color:white important! ;" href="/admin/deleteUser">Delete</a></td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+
+</div>
+</body>
+
+</html>
