@@ -10,12 +10,12 @@
             <div class="slide-controls">
                 <input type="radio" name="slide" id="login" checked>
                 <input type="radio" name="slide" id="signup">
-                <label for="login" class="slide login">Login</label>
-                <label for="signup" class="slide signup">Signup</label>
+                <label for="login" class="slide login" id="login">Login</label>
+                <label for="signup" class="slide signup" id="signup">Signup</label>
                 <div class="slider-tab"></div>
             </div>
             {{ if .Errmsg }}
-            <p style="color: red;text-align:center">{{ .Errmsg }}</p>
+            <p style="color: red;text-align:center" id="warn">{{ .Errmsg }}</p>
             {{end}}
             <div class="form-inner">            
                 <form action="/user/userValidate" method="post" class="login">
@@ -55,3 +55,12 @@
 </div>
 
 {{ template "footer_sec.html"}}
+
+<script>
+document.getElementById('login').addEventListener('click',() => {
+    document.getElementById('warn').innerText = ""
+})
+document.getElementById('signup').addEventListener('click',() => {
+    document.getElementById('warn').innerText = ""
+})
+</script>

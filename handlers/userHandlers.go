@@ -9,8 +9,6 @@ import (
 
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 var Tpl *template.Template
@@ -36,6 +34,7 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 	session, _ := utils.UserStore.Get(r, "session")
 	if session.Values["authenticated"] == true {
 		w.Header().Set("Cache-Control", "no-store")
+
 		http.Redirect(w, r, "/user/home", http.StatusFound)
 	}
 	val := models.Credentials{Header: "Home"}
@@ -43,6 +42,7 @@ func IndexPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func SignUpPage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
 	session, _ := utils.UserStore.Get(r, "session")
 	if session.Values["authenticated"] == true {
 		http.Redirect(w, r, "/user/home", http.StatusFound)
@@ -77,12 +77,14 @@ func ValidateUser(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("invalid Pass")
 			w.Header().Set("Cache-Control", "no-store")
+
 			val := models.Credentials{Header: "Login", Errmsg: "Incorrect Password"}
 			Tpl.ExecuteTemplate(w, "login.html", val)
 		}
 	} else {
 		fmt.Println("invalid email")
 		w.Header().Set("Cache-Control", "no-store")
+
 		val := models.Credentials{Errmsg: "Invalid Email", Header: "Login"}
 		Tpl.ExecuteTemplate(w, "login.html", val)
 	}
@@ -103,6 +105,7 @@ func UserRegister(w http.ResponseWriter, r *http.Request) {
 	_, emailFound := database.CheckUserEmail(email)
 	if emailFound {
 		w.Header().Set("Cache-Control", "no-store")
+
 		val := models.Credentials{Header: "Login", Errmsg: "Email already exist"}
 		Tpl.ExecuteTemplate(w, "login.html", val)
 	}
@@ -122,12 +125,13 @@ func UserHome(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	w.Header().Set("Cache-Control", "no-store")
+
 	fmt.Println(session.Values["authenticated"], session.Values["EmailId"])
 
 	if session.Values["authenticated"] == true {
 		email := session.Values["EmailId"].(string)
 		val := models.Credentials{Header: "Home Page", Email: email}
-		Tpl.ExecuteTemplate(w, "loggedIn.html", val)
+		Tpl.ExecuteTemplate(w, "home.html", val)
 	} else {
 		val := models.Credentials{Errmsg: "You Must Login", Header: "Login"}
 		Tpl.ExecuteTemplate(w, "login.html", val)
@@ -140,135 +144,11 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 
 	// Clear the cache
 	w.Header().Set("Cache-Control", "no-store")
+
 	session, _ := utils.UserStore.Get(r, "session")
 	session.Values["authenticated"] = nil
 	session.Values["EmailId"] = nil
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 	http.Redirect(w, r, "/", http.StatusFound)
-}
-
-//............................Admin Handlers.............................................
-
-func AdminAuth(HandlerFunc http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		session, _ := utils.AdminStore.Get(r, "session")
-
-		if session.Values["AdminAutheticate"] == false || session.Values["AdminAuthenticate"] == nil {
-			val := models.ClientUser{ErrMsg: "You Must Login !", Title: "Admin Login"}
-			Tpl.ExecuteTemplate(w, "adminLogin.html", val)
-			return
-		}
-		HandlerFunc.ServeHTTP(w, r)
-	}
-}
-
-func AdminLogin(w http.ResponseWriter, r *http.Request) {
-	session, _ := utils.AdminStore.Get(r, "session")
-	if session.Values["AdminAutheticate"] == true {
-		http.Redirect(w, r, "/admin/dasboard", http.StatusFound)
-	}
-	fmt.Println("AdminLogin")
-	val := models.ClientUser{Title: "Admin Login"}
-	Tpl.ExecuteTemplate(w, "adminLogin.html", val)
-}
-
-func ValidateAdmin(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		log.Fatal("validate admin parse err : ", err)
-	}
-	userName := r.PostFormValue("adminName")
-	// password := r.PostFormValue("adminPassword")
-
-	_, emailValid := database.CheckAdminEmail(userName)
-	if emailValid {
-		// passValid := utils.CheckPasswordMatch(password, hashPass)
-		// if passValid {
-		fmt.Println("email valid")
-		w.Header().Set("Cache-Control", "no-store")
-		session, _ := utils.AdminStore.Get(r, "session")
-		session.Values["AdminAuthenticate"] = true
-		session.Values["AdminUserName"] = userName
-		session.Save(r, w)
-		http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
-		// } else {
-		// 	w.Header().Set("Cache-Control", "no-store")
-		// 	val := models.Credentials{Errmsg: "Wrong PassWord"}
-		// 	Tpl.ExecuteTemplate(w, "adminLogin.html", val)
-		// }
-	} else {
-		w.Header().Set("Cache-Control", "no-store")
-		val := models.ClientUser{ErrMsg: "Invalid Username", Title: "Admin Login"}
-		Tpl.ExecuteTemplate(w, "adminLogin.html", val)
-	}
-
-}
-
-func Dashboard(w http.ResponseWriter, r *http.Request) {
-	session, _ := utils.AdminStore.Get(r, "session")
-	if session.Values["AdminAuthenticate"] == true {
-		w.Header().Set("Cache-Control", "no-store")
-		username := session.Values["AdminUserName"].(string)
-		UserData := database.FetchUserData()
-		UserData.Title = "DashBoard"
-		UserData.AdminName = username
-		Tpl.ExecuteTemplate(w, "adminDashboard.html", UserData)
-	}
-
-}
-
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userId := vars["Id"]
-	res := database.DeleteUser(userId)
-	if res {
-		fmt.Print("worked")
-		http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
-	} else {
-		fmt.Fprint(w, "not deleted!!")
-	}
-}
-
-func EditUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userId := vars["Id"]
-	fmt.Println("user id :", userId)
-	email, err := database.GetUser(userId)
-	if !err {
-		log.Fatal(err)
-	}
-	session, _ := utils.AdminStore.Get(r, "session")
-	userName := session.Values["AdminUserName"].(string)
-	val := models.ClientUser{Title: "Edit User", Email: email, Id: userId, Username: userName}
-	Tpl.ExecuteTemplate(w, "editPanel.html", val)
-
-}
-
-func AdminLogout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-store")
-	session, _ := utils.AdminStore.Get(r, "session")
-	if session.Values["AdminAuthenticate"] == false {
-		http.Redirect(w, r, "/admin/login", http.StatusFound)
-	}
-	session.Values["AdminUserName"] = nil
-	session.Values["AdminAuthenticate"] = nil
-	session.Options.MaxAge = -1
-	session.Save(r, w)
-	val := models.ClientUser{Title: "Admin Login"}
-	Tpl.ExecuteTemplate(w, "adminLogin.html", val)
-
-}
-
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userId := vars["Id"]
-	r.ParseForm()
-	newEmail := r.PostFormValue("updatedEmail")
-	err := database.UpdateUserdata(userId, newEmail)
-	if !err {
-		log.Fatal("User update :", err)
-	}
-	http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
-
 }

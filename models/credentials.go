@@ -11,9 +11,6 @@ type ClientUser struct {
 	Id       string
 	Email    string
 	Hashpass string
-	ErrMsg   string
-	Username string
-	Title    string
 }
 
 
@@ -21,4 +18,7 @@ type Sample struct {
 	Data []ClientUser
 	Title string
 	AdminName string
+	ErrMsg string
+	Id string
+	Email string
 }

@@ -25,7 +25,7 @@
             <td>{{.Id}}</td>
             <td><a href="#">{{.Email }}</a></td>
             <td><a class="btn btn-primary" style="color:black important! ;" href="/admin/editUser/{{.Id}}">Edit</a></td>
-            <td><a class="btn btn-danger" style="color:white important! ;" href="/admin/deleteUser/{{.Id}}">Delete</a></td>
+            <td><a class="btn btn-danger" style="color:white important! ;" onclick="return confirm('Confirm to delete {{.Email}}')" href="/admin/deleteUser/{{.Id}}">Delete</a></td>
           </tr>
           {{end}}
         </tbody>
