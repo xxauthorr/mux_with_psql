@@ -17,9 +17,9 @@ import (
 
 func AdminAuth(HandlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		session, _ := utils.AdminStore.Get(r, "session")
+		session, _ := utils.UserStore.Get(r, "session")
 
-		if session.Values["AdminAutheticate"] == false || session.Values["AdminAuthenticate"] == nil {
+		if session.Values["AdminAuthenticate"] == false || session.Values["AdminAuthenticate"] == nil {
 			val := models.Sample{ErrMsg: "You Must Login !", Title: "Admin Login"}
 			Tpl.ExecuteTemplate(w, "adminLogin.html", val)
 			return
@@ -28,11 +28,21 @@ func AdminAuth(HandlerFunc http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-
+func BackCheck(HandlerFunc http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, _ := utils.UserStore.Get(r, "session")
+		fmt.Println(session.Values["AdminAutheticate"])
+		if session.Values["AdminAuthenticate"] == true {
+			fmt.Println("working")
+			http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
+		}
+		HandlerFunc.ServeHTTP(w, r)
+	}
+}
 
 func AdminLogin(w http.ResponseWriter, r *http.Request) {
-	session, _ := utils.AdminStore.Get(r, "session")
-	if session.Values["AdminAutheticate"] == true {
+	session, _ := utils.UserStore.Get(r, "session")
+	if session.Values["AdminAuthenticate"] == true {
 		http.Redirect(w, r, "/admin/dasboard", http.StatusFound)
 	}
 	fmt.Println("AdminLogin")
@@ -41,7 +51,6 @@ func AdminLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func ValidateAdmin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-store")
 	err := r.ParseForm()
 	if err != nil {
 		log.Fatal("validate admin parse err : ", err)
@@ -53,10 +62,14 @@ func ValidateAdmin(w http.ResponseWriter, r *http.Request) {
 	if emailValid {
 		if dbPass == userPass {
 			fmt.Println("email valid")
-			session, _ := utils.AdminStore.Get(r, "session")
+
+			session, _ := utils.UserStore.Get(r, "session")
 			session.Values["AdminAuthenticate"] = true
 			session.Values["AdminUserName"] = userName
 			session.Save(r, w)
+			fmt.Println()
+			fmt.Println(session.Values["AdminAuthenticate"], ">>", session.Values["AdminUserName"])
+			w.Header().Set("Cache-Control", "no-store")
 			http.Redirect(w, r, "/admin/dashboard", http.StatusFound)
 		} else {
 			val := models.Sample{ErrMsg: "Invalid  Password", Title: "Admin Login"}
@@ -70,8 +83,9 @@ func ValidateAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
-	session, _ := utils.AdminStore.Get(r, "session")
+	session, _ := utils.UserStore.Get(r, "session")
 	if session.Values["AdminAuthenticate"] == true {
+		fmt.Println(session.Values["AdminAuthenticate"], " --> Dashboard")
 		w.Header().Set("Cache-Control", "no-store")
 		username := session.Values["AdminUserName"].(string)
 		UserData := database.FetchUserData()
@@ -102,7 +116,7 @@ func EditUser(w http.ResponseWriter, r *http.Request) {
 	if !err {
 		log.Fatal(err)
 	}
-	session, _ := utils.AdminStore.Get(r, "session")
+	session, _ := utils.UserStore.Get(r, "session")
 	userName := session.Values["AdminUserName"].(string)
 	val := models.Sample{Title: "Edit User", Email: email, Id: userId, AdminName: userName}
 	Tpl.ExecuteTemplate(w, "editPanel.html", val)
@@ -112,8 +126,8 @@ func EditUser(w http.ResponseWriter, r *http.Request) {
 func AdminLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 
-	session, _ := utils.AdminStore.Get(r, "session")
-	if session.Values["AdminAuthenticate"] == false {
+	session, _ := utils.UserStore.Get(r, "session")
+	if session.Values["AdminAuthenticate"] == nil {
 		http.Redirect(w, r, "/admin/login", http.StatusFound)
 	}
 	session.Values["AdminUserName"] = nil

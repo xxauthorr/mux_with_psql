@@ -42,8 +42,8 @@ func main() {
 
 	adminRoutes := router.PathPrefix("/admin").Subrouter()
 
-	adminRoutes.HandleFunc("/login", handlers.AdminLogin)
-	adminRoutes.HandleFunc("/authenticate", handlers.ValidateAdmin)
+	adminRoutes.HandleFunc("/login", handlers.BackCheck(handlers.AdminLogin))
+	adminRoutes.HandleFunc("/authenticate", handlers.BackCheck(handlers.ValidateAdmin))
 	adminRoutes.HandleFunc("/dashboard", handlers.AdminAuth(handlers.Dashboard))
 	adminRoutes.HandleFunc("/deleteUser/{Id}", handlers.AdminAuth(handlers.DeleteUser))
 	adminRoutes.HandleFunc("/editUser/{Id}", handlers.AdminAuth(handlers.EditUser))
