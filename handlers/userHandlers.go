@@ -19,7 +19,7 @@ func Auth(HandlerFunc http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, _ := utils.UserStore.Get(r, "session")
 
-		if session.Values["autheticated"] == false || session.Values["authenticated"] == nil {
+		if session.Values["authenticated"] == false || session.Values["authenticated"] == nil {
 			val := models.Credentials{Header: "Login", Errmsg: "You Must Login !"}
 			Tpl.ExecuteTemplate(w, "login.html", val)
 			return
